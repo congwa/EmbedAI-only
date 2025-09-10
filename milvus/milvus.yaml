@@ -1,0 +1,161 @@
+# Milvus standalone 配置文件
+
+# 通用配置
+common:
+  # 默认索引类型
+  defaultIndexType: IVF_FLAT
+  # 默认相似度计算类型
+  defaultMetricType: IP
+  # 索引构建阈值
+  indexSliceSize: 16
+
+# etcd配置
+etcd:
+  endpoints:
+    - etcd:2379
+  rootPath: by-dev # milvus/{version}
+  metaSubPath: meta
+  kvSubPath: kv
+  log:
+    level: info
+    # 日志文件配置
+    file:
+      maxSize: 300 # MB
+      maxAge: 10 # 天
+      maxBackups: 20
+
+# 对象存储配置 (MinIO)
+minio:
+  address: minio
+  port: 9000
+  accessKeyID: minioadmin
+  secretAccessKey: minioadmin
+  useSSL: false
+  bucketName: "milvus-bucket"
+  rootPath: files
+  useIAM: false
+  cloudProvider: "aws"
+  iamEndpoint: ""
+
+# 日志配置
+log:
+  level: info
+  file:
+    rootPath: ""
+    maxSize: 300 # MB
+    maxAge: 10 # 天  
+    maxBackups: 20
+  format: text
+
+# 根协调器配置
+rootCoord:
+  address: localhost
+  port: 53100
+  enableActiveStandby: false
+  maxPartitionNum: 4096
+  minSegmentSizeToEnableIndex: 1024
+
+# 代理配置
+proxy:
+  port: 19530
+  internalPort: 19529
+  http:
+    enabled: true
+    port: 9091
+  timeTickInterval: 200 # ms
+  msgStream:
+    timeTick:
+      bufSize: 512
+  maxNameLength: 255
+  maxFieldNum: 256
+  maxDimension: 32768
+  maxShardNum: 256
+  maxTaskNum: 1024
+
+# 查询协调器配置
+queryCoord:
+  address: localhost
+  port: 19531
+  autoHandoff: true
+  autoBalance: true
+  overloadedMemoryThresholdPercentage: 90
+  balanceIntervalSeconds: 60
+  memoryUsageMaxDifferencePercentage: 30
+
+# 查询节点配置
+queryNode:
+  cacheSize: 32 # GB, 每个查询节点的缓存大小
+  port: 21123
+  stats:
+    publishInterval: 1000 # ms
+  dataSync:
+    flowGraph:
+      maxQueueLength: 1024
+      maxParallelism: 1024
+  # Knowhere 配置
+  knowhere:
+    threadPoolSize: 8
+
+# 索引协调器配置
+indexCoord:
+  address: localhost
+  port: 31000
+  indexTaskSchedulerInterval: 1000 # ms
+
+# 索引节点配置
+indexNode:
+  port: 21121
+  # Knowhere 配置
+  knowhere:
+    threadPoolSize: 8
+
+# 数据协调器配置
+dataCoord:
+  address: localhost
+  port: 13333
+  segment:
+    maxSize: 1024 # MB
+    diskSegmentMaxSize: 2048 # MB
+    sealProportion: 0.12
+    assignmentExpiration: 2000 # ms
+    maxLife: 86400 # 秒
+  compaction:
+    enableAutoCompaction: true
+
+# 数据节点配置
+dataNode:
+  port: 21124
+  dataSync:
+    flowGraph:
+      maxQueueLength: 1024
+      maxParallelism: 1024
+  flush:
+    insertBufSize: 16777216 # Bytes, 16MB
+    deleteBufBytes: 67108864 # Bytes, 64MB
+    flushManagerConfig:
+      insertInterval: 1000 # ms
+      deleteInterval: 1000 # ms
+
+# 本地存储配置
+localStorage:
+  path: /var/lib/milvus/data/
+
+# 消息队列配置
+mq:
+  type: rocksmq
+
+# RocksDB 消息队列配置
+rocksmq:
+  path: /var/lib/milvus/rdb_data
+  lrucachecapacity: 536870912 # 512MB
+  rocksmqPageSize: 67108864 # 64MB
+  retentionTimeInMinutes: 4320 # 3 天
+  retentionSizeInMB: 8192 # 8 GB
+  compactionInterval: 86400 # 1 天
+
+# 追踪配置
+trace:
+  exporter: stdout
+  sampleFraction: 0
+  jaeger:
+    url: http://localhost:14268/api/traces

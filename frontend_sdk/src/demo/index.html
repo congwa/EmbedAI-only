@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmbedAI 聊天窗SDK 演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f8fafc;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 32px;
+        }
+        
+        .demo-section {
+            margin-bottom: 32px;
+        }
+        
+        .demo-section h2 {
+            color: #334155;
+            margin-bottom: 16px;
+        }
+        
+        .config-example {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow-x: auto;
+        }
+        
+        .config-example pre {
+            margin: 0;
+            color: #475569;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin: 16px 0;
+        }
+        
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .feature-item {
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .feature-item h3 {
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            font-size: 16px;
+        }
+        
+        .feature-item p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EmbedAI 聊天窗SDK</h1>
+        <p class="subtitle">智能商品推荐聊天机器人，一行代码轻松集成</p>
+        
+        <div class="demo-section">
+            <h2>🚀 快速开始</h2>
+            <p>将以下代码添加到您的网页中：</p>
+            
+            <div class="config-example">
+                <pre><code>&lt;script src="https://cdn.embedai.com/sdk/latest/intellirecs-ai.js" defer&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.IntelliRecsAI.init({
+    tenantId: "demo_tenant",
+    apiBase: "http://localhost:8000",
+    theme: { 
+      primary: "#2563eb", 
+      corner: "16px" 
+    },
+    welcome: "你好，我是你的智能导购助手。想找点什么？",
+    lang: "zh-CN",
+    productLinkMode: "new_tab",
+    enableHistory: true
+  });
+&lt;/script&gt;</code></pre>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🎮 演示控制</h2>
+            <div id="status" class="status success" style="display: none;">
+                SDK已成功初始化
+            </div>
+            
+            <button class="btn" onclick="initWidget()">初始化聊天窗</button>
+            <button class="btn" onclick="openWidget()">打开聊天窗</button>
+            <button class="btn" onclick="closeWidget()">关闭聊天窗</button>
+            <button class="btn btn-secondary" onclick="destroyWidget()">销毁聊天窗</button>
+        </div>
+        
+        <div class="demo-section">
+            <h2>✨ 核心特性</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <h3>智能推荐</h3>
+                    <p>基于RAG技术的商品智能推荐，理解用户自然语言需求</p>
+                </div>
+                <div class="feature-item">
+                    <h3>多轮对话</h3>
+                    <p>支持上下文理解的多轮对话，提供个性化购物体验</p>
+                </div>
+                <div class="feature-item">
+                    <h3>商品卡片</h3>
+                    <p>精美的商品展示卡片，包含图片、价格、评分等信息</p>
+                </div>
+                <div class="feature-item">
+                    <h3>主题定制</h3>
+                    <p>支持自定义主题色彩、圆角、字体等视觉元素</p>
+                </div>
+                <div class="feature-item">
+                    <h3>响应式设计</h3>
+                    <p>完美适配桌面端和移动端，提供一致的用户体验</p>
+                </div>
+                <div class="feature-item">
+                    <h3>轻量集成</h3>
+                    <p>单文件引入，零配置启动，不影响现有网站性能</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🔧 配置选项</h2>
+            <div class="config-example">
+                <pre><code>const config = {
+  // 必需配置
+  tenantId: "your_tenant_id",        // 租户ID
+  apiBase: "https://api.embedai.com", // API基础地址
+  
+  // 主题配置
+  theme: {
+    primary: "#2563eb",              // 主色调
+    corner: "16px",                  // 圆角大小
+    fontFamily: "system-ui",         // 字体
+    fontSize: "14px"                 // 字体大小
+  },
+  
+  // 功能配置
+  welcome: "欢迎使用智能助手",        // 欢迎语
+  lang: "zh-CN",                    // 语言
+  productLinkMode: "new_tab",       // 商品链接打开方式
+  enableHistory: true,              // 启用历史记录
+  maxHistoryLength: 20,             // 最大历史长度
+  
+  // 事件回调
+  callbacks: {
+    onOpen: () => console.log('聊天窗打开'),
+    onClose: () => console.log('聊天窗关闭'),
+    onSend: (message) => console.log('发送消息:', message),
+    onReceive: (response) => console.log('收到回复:', response),
+    onProductClick: (product) => console.log('点击商品:', product),
+    onError: (error) => console.error('发生错误:', error)
+  }
+};</code></pre>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入SDK -->
+    <script>
+        // 模拟SDK加载（实际使用时通过CDN引入）
+        window.IntelliRecsAI = {
+            init: function(config) {
+                console.log('初始化SDK配置:', config);
+                document.getElementById('status').style.display = 'block';
+                document.getElementById('status').textContent = 'SDK已成功初始化 - 租户ID: ' + config.tenantId;
+            },
+            destroy: function() {
+                console.log('销毁SDK');
+                document.getElementById('status').style.display = 'block';
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = 'SDK已销毁';
+            },
+            open: function() {
+                console.log('打开聊天窗');
+            },
+            close: function() {
+                console.log('关闭聊天窗');
+            }
+        };
+        
+        function initWidget() {
+            window.IntelliRecsAI.init({
+                tenantId: "demo_tenant_" + Date.now(),
+                apiBase: "http://localhost:8000",
+                theme: { 
+                    primary: "#2563eb", 
+                    corner: "16px" 
+                },
+                welcome: "你好，我是你的智能导购助手。想找点什么？",
+                lang: "zh-CN",
+                productLinkMode: "new_tab",
+                enableHistory: true,
+                callbacks: {
+                    onOpen: () => console.log('聊天窗已打开'),
+                    onClose: () => console.log('聊天窗已关闭'),
+                    onSend: (message) => console.log('发送消息:', message),
+                    onProductClick: (product) => console.log('点击商品:', product)
+                }
+            });
+        }
+        
+        function openWidget() {
+            window.IntelliRecsAI.open();
+        }
+        
+        function closeWidget() {
+            window.IntelliRecsAI.close();
+        }
+        
+        function destroyWidget() {
+            window.IntelliRecsAI.destroy();
+        }
+    </script>
+</body>
+</html>

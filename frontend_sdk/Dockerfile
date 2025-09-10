@@ -1,8 +1,8 @@
-# 前端 Dockerfile
+# 前端SDK Dockerfile
 # 使用多阶段构建优化镜像大小
 
 # 构建阶段
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # 定义构建参数
 ARG http_proxy
@@ -20,7 +20,7 @@ RUN npm config set registry https://registry.npmmirror.com/
 
 # 第一步：复制依赖相关文件（这些文件变化时才重新安装依赖）
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
+COPY pnpm-lock.yaml* ./
 
 # 安装 pnpm 并配置使用国内镜像源
 RUN npm install -g pnpm && \
@@ -35,15 +35,13 @@ COPY public/ ./public/
 COPY index.html ./
 COPY vite.config.ts ./
 COPY tsconfig.json ./
-COPY tsconfig.app.json ./
 COPY eslint.config.js ./
-COPY components.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
 # 设置环境变量用于生产构建
 ENV NODE_ENV=production
-ENV VITE_API_BASE_URL=http://localhost:7000
+ENV VITE_API_BASE_URL=http://localhost:10100
 
 # 构建应用
 RUN pnpm run build
@@ -61,14 +59,14 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # 创建健康检查页面
-RUN echo '<!DOCTYPE html><html><body><h1>OK</h1></body></html>' > /usr/share/nginx/html/health
+RUN echo '<!DOCTYPE html><html><body><h1>SDK OK</h1></body></html>' > /usr/share/nginx/html/health
 
 # 暴露端口
-EXPOSE 80
+EXPOSE 10102
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+    CMD curl -f http://localhost:10102/health || exit 1
 
 # 启动 nginx
 CMD ["nginx", "-g", "daemon off;"]

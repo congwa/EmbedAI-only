@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "authing-server"
+name = "embedai-server"
 version = "0.1.0"
-description = "统一身份认证平台后端服务"
-authors = ["Your Name <your.email@example.com>"]
+description = "EmbedAI RAG商品推荐聊天机器人后端服务"
+authors = ["EmbedAI Team <team@embedai.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
@@ -23,11 +23,20 @@ email-validator = "^2.2.0"
 structlog = "^24.4.0"
 loguru = "^0.7.3"
 prometheus-client = "^0.21.0"
-celery = "^5.4.0"
-redis = "^5.2.0"
 httpx = "^0.28.0"
 slowapi = "^0.1.9"
 cryptography = "^44.0.0"
+# RAG和AI相关依赖
+lightrag = "^0.0.0b14"
+langchain = "^0.3.0"
+langchain-community = "^0.3.0"
+langchain-text-splitters = "^0.3.0"
+pymilvus = "^2.4.0"
+neo4j = "^5.25.0"
+openai = "^1.51.0"
+minio = "^7.2.0"
+pandas = "^2.2.0"
+numpy = "^2.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"

@@ -1,8 +1,8 @@
-# 前端 Dockerfile
+# 前端管理后台 Dockerfile
 # 使用多阶段构建优化镜像大小
 
 # 构建阶段
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # 定义构建参数
 ARG http_proxy
@@ -43,7 +43,7 @@ COPY postcss.config.js ./
 
 # 设置环境变量用于生产构建
 ENV NODE_ENV=production
-ENV VITE_API_BASE_URL=http://localhost:7000
+ENV VITE_API_BASE_URL=http://localhost:10100
 
 # 构建应用
 RUN pnpm run build
@@ -64,11 +64,11 @@ COPY nginx.conf /etc/nginx/nginx.conf
 RUN echo '<!DOCTYPE html><html><body><h1>OK</h1></body></html>' > /usr/share/nginx/html/health
 
 # 暴露端口
-EXPOSE 80
+EXPOSE 10101
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+    CMD curl -f http://localhost:10101/health || exit 1
 
 # 启动 nginx
 CMD ["nginx", "-g", "daemon off;"]

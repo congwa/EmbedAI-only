@@ -1,13 +1,19 @@
 {
-  "name": "frontend",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@embedai/chat-widget",
+  "version": "1.0.0",
+  "description": "EmbedAI 智能商品推荐聊天窗SDK",
   "type": "module",
+  "main": "./dist/intellirecs-ai.umd.js",
+  "module": "./dist/intellirecs-ai.es.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
+    "build:lib": "vite build --mode lib",
+    "preview": "vite preview",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
