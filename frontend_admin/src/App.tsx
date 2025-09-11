@@ -18,8 +18,8 @@ function App() {
         <Route path="/graphs" element={<GraphManagement />} />
         <Route path="/users" element={<UserManagement />} />
         <Route path="/upload" element={<FileUpload />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/settings" element={<Settings />} />
+        {/* <Route path="/analytics" element={<Analytics />} /> */}
+        {/* <Route path="/settings" element={<Settings />} /> */}
       </Routes>
     </Layout>
   )

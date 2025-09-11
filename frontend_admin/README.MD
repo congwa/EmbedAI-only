@@ -247,7 +247,7 @@ curl -X POST "http://localhost:8000/api/auth/initialize-admin" \
 
 ---
 
-### 6. 📈 数据分析 (`/analytics`)
+### 6. 📈 数据分析 (`/analytics`) TODO: 待完成
 
 **功能说明**: 系统使用情况分析和性能监控
 
@@ -271,7 +271,7 @@ curl -X POST "http://localhost:8000/api/auth/initialize-admin" \
 
 ---
 
-### 7. ⚙️ 系统设置 (`/settings`)
+### 7. ⚙️ 系统设置 (`/settings`) TODO: 待完成
 
 **功能说明**: 系统配置和参数调优
 

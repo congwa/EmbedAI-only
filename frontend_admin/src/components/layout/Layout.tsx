@@ -46,16 +46,16 @@ const navigation = [
     href: '/upload',
     icon: Upload,
   },
-  {
-    name: '数据分析',
-    href: '/analytics',
-    icon: BarChart3,
-  },
-  {
-    name: '系统设置',
-    href: '/settings',
-    icon: Settings,
-  },
+  // {
+  //   name: '数据分析',
+  //   href: '/analytics',
+  //   icon: BarChart3,
+  // },
+  // {
+  //   name: '系统设置',
+  //   href: '/settings',
+  //   icon: Settings,
+  // },
 ]
 
 export function Layout({ children }: LayoutProps) {
