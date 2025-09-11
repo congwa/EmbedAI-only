@@ -13,7 +13,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from api.routes import chat, admin, health
+from api.routes import chat, admin, health, graph_router, knowledge_router
 from core.config import settings
 from core.exceptions import setup_exception_handlers
 from utils.logging_config import setup_logging
@@ -73,6 +73,8 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/api", tags=["健康检查"])
     app.include_router(chat.router, prefix="/api/chat", tags=["聊天推荐"])
     app.include_router(admin.router, prefix="/api/admin", tags=["管理后台"])
+    app.include_router(knowledge_router.router, prefix="/api", tags=["知识库管理"])
+    app.include_router(graph_router.graph, prefix="/api", tags=["图谱管理"])
     
     # 添加Prometheus指标端点
     metrics_app = make_asgi_app()

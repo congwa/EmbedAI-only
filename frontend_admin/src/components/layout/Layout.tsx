@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard,
   Database,
+  Network,
+  Users,
   Upload,
   BarChart3,
   Settings,
@@ -28,6 +30,16 @@ const navigation = [
     name: '数据库管理',
     href: '/databases',
     icon: Database,
+  },
+  {
+    name: '图数据库管理',
+    href: '/graphs',
+    icon: Network,
+  },
+  {
+    name: '用户管理',
+    href: '/users',
+    icon: Users,
   },
   {
     name: '文件上传',
