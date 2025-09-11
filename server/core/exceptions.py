@@ -36,10 +36,6 @@ class ModelError(EmbedAIException):
         super().__init__(message, code)
 
 
-class TenantError(EmbedAIException):
-    """租户相关异常"""
-    def __init__(self, message: str, code: str = "TENANT_ERROR"):
-        super().__init__(message, code)
 
 
 class RateLimitError(EmbedAIException):

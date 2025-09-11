@@ -17,7 +17,6 @@ import {
   PieChart,
   Activity
 } from 'lucide-react'
-import { formatDateTime, formatRelativeTime } from '@/lib/utils'
 
 interface AnalyticsData {
   overview: {
@@ -45,14 +44,6 @@ interface AnalyticsData {
       recommendations: number
     }>
   }
-  tenants: Array<{
-    tenant_id: string
-    name: string
-    total_chats: number
-    total_recommendations: number
-    success_rate: number
-    last_active: string
-  }>
 }
 
 export function Analytics() {
@@ -60,10 +51,9 @@ export function Analytics() {
     start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0]
   })
-  const [selectedTenant, setSelectedTenant] = useState('')
 
   const { data: analytics, isLoading, refetch } = useQuery<AnalyticsData>({
-    queryKey: ['analytics', dateRange, selectedTenant],
+    queryKey: ['analytics', dateRange],
     queryFn: async () => {
       // 模拟数据，实际应该从API获取
       return {
@@ -96,33 +86,7 @@ export function Analytics() {
             chats: Math.floor(Math.random() * 50) + 10,
             recommendations: Math.floor(Math.random() * 30) + 5
           }))
-        },
-        tenants: [
-          {
-            tenant_id: 'tenant_1',
-            name: '电子产品推荐',
-            total_chats: 5832,
-            total_recommendations: 3421,
-            success_rate: 0.82,
-            last_active: '2024-01-21T14:30:00Z'
-          },
-          {
-            tenant_id: 'tenant_2',
-            name: '时尚服装',
-            total_chats: 3294,
-            total_recommendations: 1876,
-            success_rate: 0.74,
-            last_active: '2024-01-21T13:45:00Z'
-          },
-          {
-            tenant_id: 'tenant_3',
-            name: '家居建材',
-            total_chats: 2156,
-            total_recommendations: 1243,
-            success_rate: 0.69,
-            last_active: '2024-01-21T12:20:00Z'
-          }
-        ]
+        }
       }
     }
   })
@@ -194,15 +158,6 @@ export function Analytics() {
                   ...dateRange,
                   end: e.target.value
                 })}
-              />
-            </div>
-            <div className="flex-1">
-              <Label htmlFor="tenant-filter">租户筛选</Label>
-              <Input
-                id="tenant-filter"
-                placeholder="输入租户ID（留空显示全部）"
-                value={selectedTenant}
-                onChange={(e) => setSelectedTenant(e.target.value)}
               />
             </div>
             <Button>
@@ -414,68 +369,62 @@ export function Analytics() {
         </Card>
       </div>
 
-      {/* 租户统计 */}
+      {/* 热门商品 */}
       <Card>
         <CardHeader>
-          <CardTitle>租户统计</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <PieChart className="h-5 w-5" />
+            热门商品
+          </CardTitle>
           <CardDescription>
-            各租户的使用情况和表现
+            推荐次数最多的商品
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse p-4 border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded w-32" />
-                      <div className="h-3 bg-muted rounded w-24" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-4 bg-muted rounded w-1/3" />
+                    <div className="h-4 bg-muted rounded w-1/4" />
+                  </div>
+                  <div className="h-2 bg-muted rounded" />
+                </div>
+              ))}
+            </div>
+          ) : analytics?.overview.topProducts && analytics.overview.topProducts.length > 0 ? (
+            <div className="space-y-4">
+              {analytics.overview.topProducts.map((product, index) => (
+                <div key={product.name}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">{product.name}</span>
+                    <div className="text-right">
+                      <div className="text-sm font-medium">{product.recommendations}</div>
+                      <div className="text-xs text-muted-foreground">
+                        点击率 {(product.clickRate * 100).toFixed(1)}%
+                      </div>
                     </div>
-                    <div className="flex gap-8">
-                      <div className="text-center">
-                        <div className="h-6 bg-muted rounded w-12 mx-auto mb-1" />
-                        <div className="h-3 bg-muted rounded w-8 mx-auto" />
-                      </div>
-                      <div className="text-center">
-                        <div className="h-6 bg-muted rounded w-12 mx-auto mb-1" />
-                        <div className="h-3 bg-muted rounded w-8 mx-auto" />
-                      </div>
-                      <div className="text-center">
-                        <div className="h-6 bg-muted rounded w-12 mx-auto mb-1" />
-                        <div className="h-3 bg-muted rounded w-8 mx-auto" />
-                      </div>
-                    </div>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${
+                        index === 0 ? 'bg-blue-500' : 
+                        index === 1 ? 'bg-green-500' : 
+                        index === 2 ? 'bg-yellow-500' : 
+                        index === 3 ? 'bg-purple-500' : 'bg-gray-500'
+                      }`}
+                      style={{ 
+                        width: `${(product.recommendations / 250) * 100}%` 
+                      }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="space-y-4">
-              {analytics?.tenants.map((tenant) => (
-                <div key={tenant.tenant_id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">{tenant.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {tenant.tenant_id} · 最后活跃: {formatRelativeTime(tenant.last_active)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-8">
-                    <div className="text-center">
-                      <div className="text-lg font-bold">{tenant.total_chats.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">聊天数</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold">{tenant.total_recommendations.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">推荐数</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold">{(tenant.success_rate * 100).toFixed(1)}%</div>
-                      <div className="text-xs text-muted-foreground">成功率</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="text-center py-8 text-muted-foreground">
+              暂无数据
             </div>
           )}
         </CardContent>

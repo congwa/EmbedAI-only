@@ -95,7 +95,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
     try {
       // 调用API
       const response: ChatResponse = await apiService.sendMessage({
-        tenantId: config.tenantId,
         sessionId: state.sessionId,
         message: message.trim(),
         history: state.messages.slice(-config.maxHistoryLength || -10),

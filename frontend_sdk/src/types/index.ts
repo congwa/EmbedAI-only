@@ -72,7 +72,6 @@ export interface I18nTexts {
 // 主配置接口
 export interface IntelliRecsConfig {
   // 基础配置
-  tenantId: string
   apiBase: string
   
   // UI配置
@@ -99,7 +98,6 @@ export interface IntelliRecsConfig {
 
 // API请求类型
 export interface ChatRequest {
-  tenantId: string
   sessionId: string
   message: string
   history: ChatMessage[]

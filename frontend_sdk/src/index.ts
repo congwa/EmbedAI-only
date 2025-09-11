@@ -29,8 +29,8 @@ function init(userConfig: Partial<IntelliRecsConfig>) {
     const config = applyDefaultConfig(userConfig)
     
     // 检查必需参数
-    if (!config.tenantId) {
-      throw new Error('tenantId is required')
+    if (!config.apiBase) {
+      throw new Error('apiBase is required')
     }
     
     // 销毁现有实例
@@ -39,7 +39,7 @@ function init(userConfig: Partial<IntelliRecsConfig>) {
     }
     
     // 创建容器元素
-    const containerId = `intellirecs-widget-${config.tenantId}`
+    const containerId = `intellirecs-widget-${Date.now()}`
     let container = document.getElementById(containerId)
     
     if (!container) {

@@ -45,7 +45,6 @@ const defaultI18n: Record<string, I18nTexts> = {
 
 // 默认配置
 const defaultConfig: IntelliRecsConfig = {
-  tenantId: '',
   apiBase: 'https://api.intellirecs.ai',
   theme: {
     primary: '#2563eb',
@@ -108,10 +107,6 @@ export function generateMessageId(): string {
  */
 export function validateConfig(config: Partial<IntelliRecsConfig>): string[] {
   const errors: string[] = []
-  
-  if (!config.tenantId) {
-    errors.push('tenantId is required')
-  }
   
   if (!config.apiBase) {
     errors.push('apiBase is required')

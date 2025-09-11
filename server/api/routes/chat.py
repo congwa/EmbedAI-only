@@ -1,5 +1,9 @@
 """
-聊天推荐API路由 - 集成知识库数据库
+聊天推荐API路由 - 基于真实RAG系统的智能推荐
+
+提供两个主要接口:
+1. /message - 需要认证的内部聊天接口
+2. /recommendations - SDK专用的无认证推荐接口
 """
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from typing import List, Optional
@@ -7,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import time
 import uuid
+import os
 
 from api.models.user_model import User
 from api.models.kb_models import KnowledgeDatabase, KnowledgeFile, KnowledgeNode
@@ -14,9 +19,12 @@ from api.models.thread_model import Thread
 from api.utils.auth_middleware import get_current_user, get_db
 from api.utils.common_utils import log_operation
 from src.utils import logger
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 router = APIRouter(prefix="/chat", tags=["chat"])
-
+limiter = Limiter(key_func=get_remote_address)
 
 # =============================================================================
 # === 请求和响应模型 ===
@@ -39,6 +47,49 @@ class ChatResponse(BaseModel):
 class ThreadCreateRequest(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+
+
+class RecommendationRequest(BaseModel):
+    sessionId: str
+    message: str
+    history: List[dict] = []
+    filters: Optional[dict] = None
+    topK: Optional[int] = 10
+    lang: Optional[str] = "zh-CN"
+
+
+class ProductRecommendation(BaseModel):
+    sku: str
+    title: str
+    price: float
+    currency: str = "CNY"
+    imageUrl: Optional[str] = None
+    productUrl: Optional[str] = None
+    brand: Optional[str] = None
+    category: Optional[str] = None
+    rating: Optional[float] = None
+    stock: Optional[int] = None
+    reasons: List[str] = []
+    score: float = 0.0
+    tags: List[str] = []
+
+
+class Evidence(BaseModel):
+    type: str  # 'doc' | 'url'
+    fileId: Optional[str] = None
+    snippet: str
+    href: Optional[str] = None
+    title: Optional[str] = None
+
+
+class RecommendationResponse(BaseModel):
+    success: bool = True
+    reply: str
+    products: List[ProductRecommendation] = []
+    evidence: List[Evidence] = []
+    traceId: str
+    sessionId: str
+    timestamp: int
 
 
 # =============================================================================
@@ -126,7 +177,6 @@ async def send_message(
 
 
 async def log_recommendation_details(
-    tenant_id: str, 
     session_id: str, 
     trace_id: str, 
     product_count: int, 
@@ -135,11 +185,11 @@ async def log_recommendation_details(
     """异步记录推荐详情日志"""
     try:
         logger.info(
-            f"推荐详情 - 租户: {tenant_id}, 会话: {session_id}, "
+            f"推荐详情 - 会话: {session_id}, "
             f"追踪: {trace_id}, 商品数: {product_count}, 耗时: {duration:.3f}s"
         )
     except Exception as e:
-        logger.error(f"记录推荐详情失败: {e}")
+        logger.error(f"记录推荐日志失败: {e}")
 
 
 @router.get("/sessions/{session_id}/history")
@@ -147,7 +197,6 @@ async def log_recommendation_details(
 async def get_session_history(
     request: Request,
     session_id: str,
-    tenant_id: str,
     limit: int = 50
 ):
     """
@@ -155,14 +204,13 @@ async def get_session_history(
     
     Args:
         session_id: 会话ID
-        tenant_id: 租户ID
         limit: 返回条数限制
     """
     try:
         # 这里可以实现会话历史记录的获取逻辑
         # 目前返回空列表，后续可以接入数据库或缓存
         
-        logger.info(f"获取会话历史: session_id={session_id}, tenant_id={tenant_id}")
+        logger.info(f"获取会话历史: session_id={session_id}")
         
         return {
             "success": True,
@@ -186,20 +234,18 @@ async def get_session_history(
 @limiter.limit("10/minute")
 async def clear_session(
     request: Request,
-    session_id: str,
-    tenant_id: str
+    session_id: str
 ):
     """
     清空会话历史
     
     Args:
         session_id: 会话ID
-        tenant_id: 租户ID
     """
     try:
         # 这里可以实现会话清空逻辑
         
-        logger.info(f"清空会话: session_id={session_id}, tenant_id={tenant_id}")
+        logger.info(f"清空会话: session_id={session_id}")
         
         return {
             "success": True,
@@ -313,11 +359,11 @@ async def delete_thread(
             Thread.id == thread_id,
             Thread.user_id == str(current_user.id)
         ).first()
-        
-        if not thread:
+        # 输入验证
+        if not rec_request.message.strip():
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="对话线程未找到"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="message不能为空"
             )
         
         db.delete(thread)

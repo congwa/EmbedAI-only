@@ -139,7 +139,6 @@
                 <pre><code>&lt;script src="https://cdn.embedai.com/sdk/latest/intellirecs-ai.js" defer&gt;&lt;/script&gt;
 &lt;script&gt;
   window.IntelliRecsAI.init({
-    tenantId: "demo_tenant",
     apiBase: "http://localhost:8000",
     theme: { 
       primary: "#2563eb", 
@@ -201,7 +200,6 @@
             <div class="config-example">
                 <pre><code>const config = {
   // 必需配置
-  tenantId: "your_tenant_id",        // 租户ID
   apiBase: "https://api.embedai.com", // API基础地址
   
   // 主题配置
@@ -240,7 +238,7 @@
             init: function(config) {
                 console.log('初始化SDK配置:', config);
                 document.getElementById('status').style.display = 'block';
-                document.getElementById('status').textContent = 'SDK已成功初始化 - 租户ID: ' + config.tenantId;
+                document.getElementById('status').textContent = 'SDK已成功初始化 - API地址: ' + config.apiBase;
             },
             destroy: function() {
                 console.log('销毁SDK');
@@ -258,7 +256,6 @@
         
         function initWidget() {
             window.IntelliRecsAI.init({
-                tenantId: "demo_tenant_" + Date.now(),
                 apiBase: "http://localhost:8000",
                 theme: { 
                     primary: "#2563eb", 

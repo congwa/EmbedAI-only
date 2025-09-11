@@ -77,7 +77,6 @@ class TestChatAPI:
         
         # 发送请求
         request_data = {
-            "tenantId": "test_tenant",
             "sessionId": "test_session",
             "message": "推荐一款手机",
             "history": [],
@@ -107,7 +106,6 @@ class TestChatAPI:
         mock_kb_service.chat_recommendation.return_value = mock_response
         
         request_data = {
-            "tenantId": "test_tenant",
             "sessionId": "test_session_2",
             "message": "推荐iPhone",
             "history": [
@@ -144,7 +142,6 @@ class TestChatAPI:
     def test_chat_recommendations_invalid_top_k(self, client):
         """测试无效的topK参数"""
         request_data = {
-            "tenantId": "test_tenant",
             "sessionId": "test_session",
             "message": "推荐商品",
             "topK": 100  # 超出最大值
@@ -156,7 +153,7 @@ class TestChatAPI:
     def test_get_session_history(self, client):
         """测试获取会话历史"""
         response = client.get(
-            "/api/chat/sessions/test_session/history?tenant_id=test_tenant&limit=10"
+            "/api/chat/sessions/test_session/history?limit=10"
         )
         assert response.status_code == 200
         
@@ -169,7 +166,7 @@ class TestChatAPI:
     def test_clear_session(self, client):
         """测试清空会话"""
         response = client.delete(
-            "/api/chat/sessions/test_session?tenant_id=test_tenant"
+            "/api/chat/sessions/test_session"
         )
         assert response.status_code == 200
         
@@ -187,7 +184,6 @@ class TestAdminAPI:
             {
                 "id": "test_db_1",
                 "name": "测试数据库1",
-                "tenant_id": "tenant_1",
                 "status": "active",
                 "created_at": 1234567890,
                 "updated_at": 1234567890
@@ -204,12 +200,11 @@ class TestAdminAPI:
     
     def test_create_database(self, client, mock_kb_service):
         """测试创建数据库"""
-        mock_kb_service.get_or_create_tenant_db.return_value = "new_db_id"
+        mock_kb_service.get_or_create_default_db.return_value = "new_db_id"
         
         request_data = {
             "name": "新数据库",
             "description": "测试数据库",
-            "tenantId": "test_tenant",
             "embeddingModel": "BAAI/bge-m3"
         }
         
@@ -268,7 +263,7 @@ class TestAdminAPI:
     
     def test_get_analytics(self, client):
         """测试获取分析数据"""
-        response = client.get("/api/admin/analytics/conversations?tenant_id=test_tenant")
+        response = client.get("/api/admin/analytics/conversations")
         assert response.status_code == 200
         
         data = response.json()

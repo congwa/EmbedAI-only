@@ -24,34 +24,62 @@ class APIService {
     const url = `${this.baseURL}/api/chat/recommendations`
     
     const payload = {
-      tenantId: request.tenantId,
-      sessionId: request.sessionId,
-      message: request.message,
-      history: request.history.map(msg => ({
+      sessionId: request.sessionId.trim(),
+      message: request.message.trim(),
+      history: Array.isArray(request.history) ? request.history.map(msg => ({
         role: msg.role,
-        content: msg.content
-      })),
-      filters: request.filters,
-      topK: request.topK || 10,
+        content: msg.content || ''
+      })) : [],
+      filters: request.filters || {},
+      topK: Math.min(Math.max(request.topK || 10, 1), 20), // 限制在1-20之间
       lang: request.lang || 'zh-CN'
     }
 
-    return this.request('POST', url, payload)
+    try {
+      const response = await this.request('POST', url, payload)
+      
+      // 验证响应结构
+      if (!this.validateResponse(response)) {
+        throw new SDKError('INVALID_RESPONSE', '服务器返回的数据格式不正确')
+      }
+      
+      return response
+    } catch (error: any) {
+      if (error instanceof SDKError) {
+        throw error
+      }
+      throw new SDKError('REQUEST_FAILED', `请求失败: ${error?.message || '未知错误'}`)
+    }
   }
 
   /**
    * 获取会话历史
    */
-  async getSessionHistory(sessionId: string, tenantId: string, limit: number = 50): Promise<any> {
-    const url = `${this.baseURL}/api/chat/sessions/${sessionId}/history?tenant_id=${tenantId}&limit=${limit}`
-    return this.request('GET', url)
+  async getSessionHistory(sessionId: string, limit: number = 50): Promise<any> {
+    // 参数验证
+    if (!sessionId) {
+      throw new SDKError('INVALID_PARAMS', '会话ID不能为空')
+    }
+
+    const url = `${this.baseURL}/api/chat/sessions/${encodeURIComponent(sessionId)}/history`
+    const params = new URLSearchParams({
+      limit: Math.min(Math.max(limit, 1), 100).toString() // 限制在1-100之间
+    })
+
+    return this.request('GET', `${url}?${params}`)
   }
 
   /**
    * 清空会话
    */
-  async clearSession(sessionId: string, tenantId: string): Promise<any> {
-    const url = `${this.baseURL}/api/chat/sessions/${sessionId}?tenant_id=${tenantId}`
+  async clearSession(sessionId: string): Promise<any> {
+    // 参数验证
+    if (!sessionId) {
+      throw new SDKError('INVALID_PARAMS', '会话ID不能为空')
+    }
+
+    const url = `${this.baseURL}/api/chat/sessions/${encodeURIComponent(sessionId)}`
+
     return this.request('DELETE', url)
   }
 
@@ -134,6 +162,49 @@ class APIService {
     if (error.message.includes('NetworkError')) return true
     
     return false
+  }
+
+  /**
+   * 验证响应结构
+   */
+  private validateResponse(response: any): boolean {
+    if (!response || typeof response !== 'object') {
+      return false
+    }
+    
+    // 检查必要字段
+    if (typeof response.reply !== 'string') {
+      return false
+    }
+    
+    if (!Array.isArray(response.products)) {
+      return false
+    }
+    
+    if (!Array.isArray(response.evidence)) {
+      return false
+    }
+    
+    if (typeof response.traceId !== 'string') {
+      return false
+    }
+    
+    if (typeof response.sessionId !== 'string') {
+      return false
+    }
+    
+    if (typeof response.timestamp !== 'number') {
+      return false
+    }
+    
+    // 验证商品结构
+    for (const product of response.products) {
+      if (!product.sku || !product.title || typeof product.price !== 'number') {
+        return false
+      }
+    }
+    
+    return true
   }
 
   /**

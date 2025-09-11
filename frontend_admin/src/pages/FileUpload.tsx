@@ -1,9 +1,14 @@
 import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import {
   Upload,
@@ -26,7 +31,6 @@ interface FileInfo {
   filename: string
   size: number
   content_type: string
-  tenant_id: string
   upload_time: string
   processing_status: 'pending' | 'processing' | 'completed' | 'failed'
   error_message?: string
@@ -40,7 +44,6 @@ interface UploadProgress {
 }
 
 export function FileUpload() {
-  const [selectedTenant, setSelectedTenant] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [dragOver, setDragOver] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([])
@@ -50,7 +53,7 @@ export function FileUpload() {
 
   // 获取文件列表
   const { data: files, isLoading, refetch } = useQuery<FileInfo[]>({
-    queryKey: ['files', selectedTenant],
+    queryKey: ['files'],
     queryFn: async () => {
       // 模拟数据，实际应该调用API
       return [
@@ -59,36 +62,33 @@ export function FileUpload() {
           filename: 'products.csv',
           size: 2048576,
           content_type: 'text/csv',
-          tenant_id: 'tenant_1',
           upload_time: '2024-01-21T10:30:00Z',
-          processing_status: 'completed'
+          processing_status: 'completed' as const
         },
         {
           id: 'file_2',
           filename: 'product_images.zip',
           size: 15728640,
           content_type: 'application/zip',
-          tenant_id: 'tenant_1',
           upload_time: '2024-01-21T11:15:00Z',
-          processing_status: 'processing'
+          processing_status: 'processing' as const
         },
         {
           id: 'file_3',
           filename: 'descriptions.txt',
           size: 512000,
           content_type: 'text/plain',
-          tenant_id: 'tenant_2',
           upload_time: '2024-01-21T09:45:00Z',
-          processing_status: 'failed',
+          processing_status: 'failed' as const,
           error_message: '文件格式不支持'
         }
-      ].filter(file => !selectedTenant || file.tenant_id === selectedTenant)
+      ]
     }
   })
 
   // 文件上传
   const uploadMutation = useMutation({
-    mutationFn: async ({ files, tenant_id }: { files: File[], tenant_id: string }) => {
+    mutationFn: async ({ files }: { files: File[] }) => {
       // 模拟文件上传
       for (const file of files) {
         const uploadItem: UploadProgress = {
@@ -192,33 +192,21 @@ export function FileUpload() {
     setDragOver(false)
   }, [])
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     setDragOver(false)
     
     const droppedFiles = Array.from(e.dataTransfer.files)
-    if (droppedFiles.length > 0 && selectedTenant) {
-      uploadMutation.mutate({ files: droppedFiles, tenant_id: selectedTenant })
-    } else if (!selectedTenant) {
-      toast({
-        title: '请选择租户',
-        description: '上传前请先选择目标租户ID',
-        variant: 'destructive'
-      })
+    if (droppedFiles.length > 0) {
+      uploadMutation.mutate({ files: droppedFiles })
     }
-  }, [selectedTenant, uploadMutation, toast])
+  }, [uploadMutation, toast])
 
   // 处理文件选择
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || [])
-    if (selectedFiles.length > 0 && selectedTenant) {
-      uploadMutation.mutate({ files: selectedFiles, tenant_id: selectedTenant })
-    } else if (!selectedTenant) {
-      toast({
-        title: '请选择租户',
-        description: '上传前请先选择目标租户ID',
-        variant: 'destructive'
-      })
+    if (selectedFiles.length > 0) {
+      uploadMutation.mutate({ files: selectedFiles })
     }
     // 清除input值以允许重复选择同一文件
     e.target.value = ''
@@ -283,15 +271,6 @@ export function FileUpload() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <div className="w-64">
-              <Label htmlFor="tenant">目标租户 *</Label>
-              <Input
-                id="tenant"
-                placeholder="输入租户ID"
-                value={selectedTenant}
-                onChange={(e) => setSelectedTenant(e.target.value)}
-              />
-            </div>
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -339,16 +318,11 @@ export function FileUpload() {
               id="file-upload"
               accept=".csv,.txt,.json,.pdf,.doc,.docx,.xls,.xlsx"
             />
-            <Button asChild disabled={!selectedTenant}>
+            <Button asChild>
               <label htmlFor="file-upload" className="cursor-pointer">
                 选择文件
               </label>
             </Button>
-            {!selectedTenant && (
-              <p className="text-xs text-destructive mt-2">
-                请先选择租户ID
-              </p>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -445,7 +419,6 @@ export function FileUpload() {
                       </div>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>{formatFileSize(file.size)}</span>
-                        <span>租户: {file.tenant_id}</span>
                         <span>{formatDateTime(file.upload_time)}</span>
                       </div>
                       {file.error_message && (

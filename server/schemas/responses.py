@@ -56,7 +56,6 @@ class DatabaseInfo(BaseModel):
     id: str = Field(..., description="数据库ID")
     name: str = Field(..., description="数据库名称")
     description: Optional[str] = Field(None, description="描述")
-    tenant_id: str = Field(..., description="租户ID", alias="tenantId")
     status: str = Field(..., description="状态：active/building/error")
     file_count: int = Field(default=0, description="文件数量", alias="fileCount")
     chunk_count: int = Field(default=0, description="文档块数量", alias="chunkCount")

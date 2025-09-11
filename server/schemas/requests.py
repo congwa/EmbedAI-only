@@ -28,7 +28,6 @@ class ProductFilter(BaseModel):
 
 class ChatRecommendationRequest(BaseModel):
     """聊天推荐请求模型"""
-    tenant_id: str = Field(..., description="租户ID", alias="tenantId")
     session_id: str = Field(..., description="会话ID", alias="sessionId")
     message: str = Field(..., description="用户消息", min_length=1, max_length=1000)
     history: Optional[List[ChatMessage]] = Field(default=[], description="历史对话")
@@ -53,7 +52,6 @@ class DatabaseCreateRequest(BaseModel):
     """创建数据库请求模型"""
     name: str = Field(..., description="数据库名称", min_length=1, max_length=100)
     description: Optional[str] = Field(None, description="数据库描述", max_length=500)
-    tenant_id: str = Field(..., description="租户ID", alias="tenantId")
     embedding_model: Optional[str] = Field(None, description="Embedding模型", alias="embeddingModel")
     chunk_size: Optional[int] = Field(default=1000, description="文档分块大小", alias="chunkSize")
     chunk_overlap: Optional[int] = Field(default=200, description="分块重叠大小", alias="chunkOverlap")

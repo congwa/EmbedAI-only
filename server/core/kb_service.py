@@ -9,7 +9,7 @@ from datetime import datetime
 from knowledge.kb_manager import KBManager
 from knowledge.lightrag_kb import LightRagKB
 from core.config import settings, get_openai_config, get_embedding_config, get_reranker_config
-from core.exceptions import KnowledgeBaseError, RAGError, TenantError
+from core.exceptions import KnowledgeBaseError, RAGError
 from schemas.requests import ChatRecommendationRequest, ProductFilter
 from schemas.responses import ProductRecommendation, Evidence, ChatRecommendationResponse
 from utils.logging_config import logger
@@ -26,53 +26,46 @@ class KBService:
         # 初始化知识库管理器
         self.kb_manager = KBManager(self.work_dir)
         
-        # 租户数据库映射缓存 {tenant_id: db_id}
-        self._tenant_db_cache: Dict[str, str] = {}
+        # 默认知识库ID
+        self.default_db_id = "default"
         
         logger.info("知识库服务初始化完成")
     
-    async def get_or_create_tenant_db(self, tenant_id: str) -> str:
-        """获取或创建租户数据库"""
-        if tenant_id in self._tenant_db_cache:
-            return self._tenant_db_cache[tenant_id]
-        
-        # 生成数据库ID
-        db_id = f"tenant_{tenant_id}"
-        
+    async def get_or_create_default_db(self) -> str:
+        """获取或创建默认知识库"""
         try:
             # 检查数据库是否存在
             databases = self.kb_manager.get_databases()
-            if db_id not in databases:
+            if self.default_db_id not in databases:
                 # 创建新数据库
-                await self._create_tenant_database(tenant_id, db_id)
+                await self._create_default_database()
             
-            self._tenant_db_cache[tenant_id] = db_id
-            return db_id
+            return self.default_db_id
             
         except Exception as e:
-            logger.error(f"获取/创建租户数据库失败: {e}")
-            raise KnowledgeBaseError(f"租户数据库初始化失败: {str(e)}")
+            logger.error(f"获取/创建默认数据库失败: {e}")
+            raise KnowledgeBaseError(f"默认数据库初始化失败: {str(e)}")
     
-    async def _create_tenant_database(self, tenant_id: str, db_id: str):
-        """创建租户数据库"""
+    async def _create_default_database(self):
+        """创建默认数据库"""
         try:
             # 获取配置
             openai_config = get_openai_config()
             embedding_config = get_embedding_config()
             
-            # 创建LightRAG知识库
+            # 创建 LightRAG 知识库
             kb = self.kb_manager.create_kb(
-                db_id=db_id,
+                db_id=self.default_db_id,
                 kb_type="lightrag",
                 embedding_config=embedding_config,
                 llm_config=openai_config
             )
             
-            logger.info(f"为租户 {tenant_id} 创建数据库 {db_id}")
+            logger.info(f"创建默认数据库 {self.default_db_id}")
             
         except Exception as e:
-            logger.error(f"创建租户数据库失败: {e}")
-            raise KnowledgeBaseError(f"创建租户数据库失败: {str(e)}")
+            logger.error(f"创建默认数据库失败: {e}")
+            raise KnowledgeBaseError(f"创建默认数据库失败: {str(e)}")
     
     async def chat_recommendation(self, request: ChatRecommendationRequest) -> ChatRecommendationResponse:
         """聊天商品推荐"""
@@ -80,8 +73,8 @@ class KBService:
         timestamp = int(datetime.now().timestamp())
         
         try:
-            # 获取租户数据库
-            db_id = await self.get_or_create_tenant_db(request.tenant_id)
+            # 获取默认数据库
+            db_id = await self.get_or_create_default_db()
             
             # 构建查询上下文
             query_context = self._build_query_context(request)
@@ -290,21 +283,16 @@ class KBService:
             logger.error(f"获取数据库信息失败: {e}")
             raise KnowledgeBaseError(f"获取数据库信息失败: {str(e)}")
     
-    def list_databases(self, tenant_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def list_databases(self) -> List[Dict[str, Any]]:
         """列出数据库"""
         try:
             databases = self.kb_manager.get_databases()
             result = []
             
             for db_id, db_info in databases.items():
-                # 如果指定了租户ID，只返回该租户的数据库
-                if tenant_id and not db_id.startswith(f"tenant_{tenant_id}"):
-                    continue
-                
                 result.append({
                     "id": db_id,
                     "name": db_info.get("name", db_id),
-                    "tenant_id": tenant_id or db_id.replace("tenant_", ""),
                     "status": "active",  # 简化状态
                     "created_at": int(datetime.now().timestamp()),
                     "updated_at": int(datetime.now().timestamp())
