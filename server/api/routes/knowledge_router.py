@@ -15,7 +15,7 @@ from api.models.kb_models import KnowledgeDatabase, KnowledgeFile, KnowledgeNode
 from api.utils.auth_middleware import get_current_user, get_db
 from api.utils.common_utils import log_operation
 from knowledge import knowledge_base
-from src.utils import logger
+from utils.logging_config import logger
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
 

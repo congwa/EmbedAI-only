@@ -2,8 +2,8 @@ import traceback
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
-from models.user_model import User
-from utils.auth_middleware import get_admin_user
+from api.models.user_model import User
+from api.utils.auth_middleware import get_admin_user
 from knowledge import graph_base, knowledge_base
 from utils.logging_config import logger
 

@@ -18,7 +18,7 @@ from api.models.kb_models import KnowledgeDatabase, KnowledgeFile, KnowledgeNode
 from api.models.thread_model import Thread
 from api.utils.auth_middleware import get_current_user, get_db
 from api.utils.common_utils import log_operation
-from src.utils import logger
+from utils.logging_config import logger
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded

@@ -12,7 +12,7 @@ from api.models.user_model import User, OperationLog
 from api.models.kb_models import KnowledgeDatabase, KnowledgeFile
 from api.utils.auth_middleware import get_admin_user, get_current_user, get_db
 from api.utils.common_utils import log_operation
-from src.utils import logger
+from utils.logging_config import logger
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
