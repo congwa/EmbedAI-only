@@ -27,7 +27,7 @@ httpx = "^0.28.0"
 slowapi = "^0.1.9"
 cryptography = "^44.0.0"
 # RAG和AI相关依赖
-lightrag = "^0.0.0b14"
+# lightrag = "^0.0.0b14"  # 暂时注释以解决版本问题
 langchain = "^0.3.0"
 langchain-community = "^0.3.0"
 langchain-text-splitters = "^0.3.0"

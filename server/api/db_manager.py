@@ -5,17 +5,17 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from server.models import Base
-from server.models.user_model import User
-from src import config
-from src.utils import logger
+from models import Base
+from models.user_model import User
+from core import config
+from utils.logging_config import logger
 
 
 class DBManager:
     """数据库管理器 - 只提供基础的数据库连接和会话管理"""
 
     def __init__(self):
-        self.db_path = os.path.join(config.save_dir, "database", "server.db")
+        self.db_path = os.path.join("./data", "database", "server.db")
         self.ensure_db_dir()
 
         # 创建SQLAlchemy引擎
