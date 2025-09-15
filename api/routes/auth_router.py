@@ -145,6 +145,12 @@ async def initialize_admin(admin_data: InitializeAdmin, db: Session = Depends(ge
 
 @auth.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="请登录后再访问",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return current_user.to_dict()
 
 
