@@ -95,6 +95,14 @@ services:
       timeout: 10s
       retries: 5
 
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:
+  neo4j_plugins:
+
 networks:
   default:
+    name: embedai_network
+  embedai_network:
     name: embedai_network
