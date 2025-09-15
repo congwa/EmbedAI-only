@@ -3,13 +3,15 @@
 配置测试夹具和环境设置
 """
 import os
-import pytest
 import asyncio
-from typing import Generator, AsyncGenerator
+import pytest
+
+from typing import Generator
 from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
+
 # 数据库导入（仅在需要时导入以避免依赖问题）
 try:
     from pymilvus import connections, utility
@@ -38,11 +40,9 @@ os.environ["MINIO_ENDPOINT"] = "localhost:10106"
 os.environ["MINIO_SECRET_KEY"] = "minioadmin123"
 
 # 延迟导入以避免循环依赖
-def create_test_app():
-    """创建测试应用"""
-    from fastapi import FastAPI
-    app = FastAPI(title="EmbedAI Test API")
-    return app
+from main import app
+from api.models import Base
+from api.utils.auth_middleware import get_db
 
 
 @pytest.fixture(scope="session")
@@ -176,8 +176,50 @@ def real_minio_client():
 
 
 # =============================================================================
-# === 集成测试夹具 ===
+# === 数据库集成测试夹具 ===
 # =============================================================================
+
+# 延迟导入，避免循环引用
+
+
+@pytest.fixture(scope="session")
+def test_db_session() -> Generator[sessionmaker, None, None]:
+    """为测试会话创建一个独立的SQLite数据库"""
+    db_path = "./test_main_db.sqlite"
+    engine = create_engine(f"sqlite:///{db_path}", connect_args={"check_same_thread": False})
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+    # 创建表
+    Base.metadata.create_all(bind=engine)
+    
+    yield TestingSessionLocal
+
+    # 清理数据库文件
+    if os.path.exists(db_path):
+        os.remove(db_path)
+
+
+@pytest.fixture()
+def db_client(test_db_session: sessionmaker) -> Generator[TestClient, None, None]:
+    """提供一个使用真实数据库会话的TestClient"""
+
+    def override_get_db():
+        """重写get_db依赖，使用测试数据库会话"""
+        try:
+            db = test_db_session()
+            yield db
+        finally:
+            db.close()
+
+    # 应用依赖覆盖
+    app.dependency_overrides[get_db] = override_get_db
+    
+    with TestClient(app) as c:
+        yield c
+    
+    # 清理依赖覆盖
+    app.dependency_overrides.clear()
+
 
 @pytest.fixture
 def integration_client(real_milvus_connection, real_neo4j_driver, real_minio_client):

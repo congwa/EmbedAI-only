@@ -1,10 +1,8 @@
 """
 EmbedAI RAG商品推荐聊天机器人 - 主应用入口
 """
-import os
 from contextlib import asynccontextmanager
 from typing import Dict, Any
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
