@@ -6,7 +6,7 @@ from loguru import logger as loguru_logger
 
 SAVE_DIR = os.getenv("SAVE_DIR", "saves")
 DATETIME = datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d")
-LOG_FILE = f"{SAVE_DIR}/logs/yuxi-{DATETIME}.log"
+LOG_FILE = f"{SAVE_DIR}/logs/embedai-{DATETIME}.log"
 
 
 def setup_logger(name, level="DEBUG", console=True):
@@ -45,7 +45,7 @@ def setup_logger(name, level="DEBUG", console=True):
 
 
 # 设置根日志记录器
-logger = setup_logger("Yuxi")
+logger = setup_logger("embedai")
 
 __all__ = ["logger"]
 

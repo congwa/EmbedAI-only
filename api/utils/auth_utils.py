@@ -6,7 +6,7 @@ from typing import Any
 from jose import jwt
 
 # JWT配置
-JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "yuxi_know_secure_key")
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "embedai_know_secure_key")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION = 7 * 24 * 60 * 60  # 7天过期
 

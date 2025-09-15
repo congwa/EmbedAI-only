@@ -3,6 +3,7 @@
 配置测试夹具和环境设置
 """
 import os
+import uuid
 import asyncio
 import pytest
 
@@ -182,14 +183,23 @@ def real_minio_client():
 # 延迟导入，避免循环引用
 
 
-@pytest.fixture(scope="session")
-def test_db_session() -> Generator[sessionmaker, None, None]:
-    """为测试会话创建一个独立的SQLite数据库"""
-    db_path = "./test_main_db.sqlite"
+@pytest.fixture(scope="function")
+def test_db_session(request) -> Generator[sessionmaker, None, None]:
+    """为每个测试函数创建一个独立的SQLite数据库"""
+    # 使用测试函数名作为数据库文件名的一部分
+    test_name = request.node.name
+    db_path = f"./test_{test_name}_{uuid.uuid4().hex[:8]}.sqlite"
+    
+    # 确保数据库文件不存在
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        
+    # 创建引擎和会话工厂
     engine = create_engine(f"sqlite:///{db_path}", connect_args={"check_same_thread": False})
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     # 创建表
+    from api.models import Base
     Base.metadata.create_all(bind=engine)
     
     yield TestingSessionLocal
@@ -202,6 +212,21 @@ def test_db_session() -> Generator[sessionmaker, None, None]:
 @pytest.fixture()
 def db_client(test_db_session: sessionmaker) -> Generator[TestClient, None, None]:
     """提供一个使用真实数据库会话的TestClient"""
+    # 获取引擎
+    engine = test_db_session.kw['bind']
+    
+    # 确保数据库已经创建好表结构
+    from api.models import Base
+    Base.metadata.create_all(bind=engine)
+    
+    # 修改全局数据库管理器的连接
+    from api.db_manager import db_manager
+    original_engine = db_manager.engine
+    original_session = db_manager.Session
+    
+    # 替换为测试数据库
+    db_manager.engine = engine
+    db_manager.Session = test_db_session
 
     def override_get_db():
         """重写get_db依赖，使用测试数据库会话"""
@@ -216,6 +241,11 @@ def db_client(test_db_session: sessionmaker) -> Generator[TestClient, None, None
     
     with TestClient(app) as c:
         yield c
+        
+    # 恢复原始数据库连接
+    db_manager.engine = original_engine
+    db_manager.Session = original_session
+    app.dependency_overrides.pop(get_db, None)
     
     # 清理依赖覆盖
     app.dependency_overrides.clear()
