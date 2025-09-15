@@ -1,19 +1,12 @@
 # 使用 Python 3.13-slim 作为基础镜像，它体积小，适合生产环境。
 FROM python:3.13-slim
 
-# 定义构建参数，用于在构建时传入代理地址。
-ARG http_proxy
-ARG https_proxy
 
 # 设置环境变量，确保 Python 输出不会被缓冲，且不生成 pyc 文件。
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
-
-# 如果提供了代理参数，则设置代理环境变量。
-ENV HTTP_PROXY=${http_proxy}
-ENV HTTPS_PROXY=${https_proxy}
 
 # --- 配置国内镜像源 ---
 # 这部分非常关键，它将所有包管理工具的源都切换到国内，可以显著提高构建速度。

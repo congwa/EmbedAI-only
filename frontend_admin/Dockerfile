@@ -4,14 +4,6 @@
 # 构建阶段
 FROM node:24-alpine AS builder
 
-# 定义构建参数
-ARG http_proxy
-ARG https_proxy
-
-# 设置代理环境变量（如果提供了构建参数）
-ENV HTTP_PROXY=${http_proxy}
-ENV HTTPS_PROXY=${https_proxy}
-
 # 设置工作目录
 WORKDIR /app
 

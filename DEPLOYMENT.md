@@ -51,10 +51,6 @@ nano .env
 # 必填：SiliconFlow API 密钥
 SILICONFLOW_API_KEY=your_api_key_here
 
-# 可选：代理配置（国内网络推荐）
-http_proxy=http://your-proxy:port
-https_proxy=http://your-proxy:port
-
 # 可选：用户ID对齐（Linux/Mac）
 APP_UID=1000
 APP_GID=1000
@@ -197,9 +193,6 @@ docker-compose restart milvus
 
 **解决**:
 ```bash
-# 使用代理构建
-export http_proxy=http://your-proxy:port
-export https_proxy=http://your-proxy:port
 docker-compose build --no-cache
 
 # 或编辑 .env 文件添加代理配置

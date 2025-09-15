@@ -4,64 +4,66 @@ services:
   # ===================
   # 数据存储服务
   # ===================
-  
-  # Milvus 向量数据库
-  milvus:
-    image: milvusdb/milvus:v2.4.15
-    container_name: embedai_milvus
-    restart: unless-stopped
-    ports:
-      - "10103:19530"  # gRPC端口
-      - "10191:9091"    # HTTP端口
-    volumes:
-      - milvus_data:/var/lib/milvus
-    environment:
-      - ETCD_ENDPOINTS=etcd:2379
-      - MINIO_ADDRESS=minio:9000
-      - MINIO_ACCESS_KEY_ID=minioadmin
-      - MINIO_SECRET_ACCESS_KEY=minioadmin
-    command: ["milvus", "run", "standalone"]
-    networks:
-      - embedai_network
-    depends_on:
-      etcd:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
-      interval: 30s
-      start_period: 120s
-      timeout: 20s
-      retries: 5
 
-  # Milvus 依赖：etcd
   etcd:
-    image: quay.io/coreos/etcd:v3.5.15
-    container_name: embedai_etcd
-    restart: unless-stopped
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.18
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
     volumes:
-      - etcd_data:/etcd
-    command: >
-      etcd
-      --advertise-client-urls=http://127.0.0.1:2379
-      --listen-client-urls=http://0.0.0.0:2379
-      --listen-peer-urls=http://0.0.0.0:2380
-      --auto-compaction-mode=revision
-      --auto-compaction-retention=1000
-      --max-request-bytes=33554432
-      --quota-backend-bytes=4294967296
-      --snapshot-count=50000
-      --initial-advertise-peer-urls=http://127.0.0.1:2380
-      --initial-cluster=default=http://127.0.0.1:2380
-      --data-dir=/etcd
-    networks:
-      - embedai_network
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
       interval: 30s
       timeout: 20s
       retries: 3
+
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "10106:9000"   # MinIO API
+      - "10107:9001"   # MinIO Console
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.6.0
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+    - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MQ_TYPE: woodpecker
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "10130:19530"   # Milvus gRPC API
+      - "10103:9091"    # Milvus HTTP API
+    depends_on:
+      - "etcd"
+      - "minio"
 
   # Neo4j 图数据库
   neo4j:
@@ -93,61 +95,6 @@ services:
       timeout: 10s
       retries: 5
 
-  # MinIO 对象存储
-  minio:
-    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
-    container_name: embedai_minio
-    restart: unless-stopped
-    ports:
-      - "10106:9000"  # API端口
-      - "10107:9001"  # 控制台端口
-    volumes:
-      - minio_data:/data
-    environment:
-      - MINIO_ROOT_USER=minioadmin
-      - MINIO_ROOT_PASSWORD=minioadmin123
-      - MINIO_CONSOLE_ADDRESS=:9001
-    command: server /data --console-address ":9001"
-    networks:
-      - embedai_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-
-# ===================
-# 网络配置
-# ===================
 networks:
-  embedai_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-
-# ===================
-# 数据卷配置
-# ===================
-volumes:
-  # Milvus数据
-  milvus_data:
-    driver: local
-  
-  # etcd数据
-  etcd_data:
-    driver: local
-  
-  # Neo4j数据
-  neo4j_data:
-    driver: local
-  neo4j_logs:
-    driver: local
-  neo4j_import:
-    driver: local
-  neo4j_plugins:
-    driver: local
-  
-  # MinIO数据
-  minio_data:
-    driver: local
+  default:
+    name: embedai_network

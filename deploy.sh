@@ -65,7 +65,6 @@ check_environment() {
             echo
             echo "主要需要配置的项目："
             echo "- SILICONFLOW_API_KEY: SiliconFlow API 密钥 (必须)"
-            echo "- http_proxy, https_proxy: 代理设置 (可选)"
             echo
             read -p "是否现在打开 .env 文件进行编辑？ (y/N): " edit_env
             if [[ $edit_env =~ ^[Yy]$ ]]; then
