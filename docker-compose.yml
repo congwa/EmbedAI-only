@@ -79,11 +79,11 @@ services:
     ports:
       - "10104:7474"  # HTTP端口
       - "10105:7687"  # Bolt端口
-    volumes:
-      - neo4j_data:/data
-      - neo4j_logs:/logs
-      - neo4j_import:/var/lib/neo4j/import
-      - neo4j_plugins:/plugins
+    volumes: # <--- 修改: 从命名卷改为绑定挂载
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/neo4j/data:/data
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/neo4j/logs:/logs
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/neo4j/import:/var/lib/neo4j/import
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/neo4j/plugins:/plugins
     environment:
       - NEO4J_AUTH=neo4j/embedai123
       - NEO4J_PLUGINS=["apoc", "n10s"]
@@ -205,28 +205,3 @@ services:
 networks:
   embedai_network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-
-# ===================
-# 数据卷配置
-# ===================
-volumes:
-  # Neo4j数据
-  neo4j_data:
-    driver: local
-  neo4j_logs:
-    driver: local
-  neo4j_import:
-    driver: local
-  neo4j_plugins:
-    driver: local
-  
-  # 后端数据
-  backend_data:
-    driver: local
-  backend_logs:
-    driver: local
-  backend_uploads:
-    driver: local
