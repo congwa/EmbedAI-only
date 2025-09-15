@@ -132,12 +132,12 @@ async def create_database(
         
         # 初始化知识库（如果需要）
         try:
-            await knowledge_base.create_knowledge_base(db_id, {
-                "name": db_request.name,
-                "description": db_request.description,
-                "embed_model": db_request.embed_model,
-                "dimension": db_request.dimension
-            })
+            await knowledge_base.create_database(
+                database_name=db_request.name,
+                description=db_request.description,
+                kb_type="lightrag",  # 默认类型
+                embed_info={"embed_model": db_request.embed_model, "dimension": db_request.dimension}
+            )
         except Exception as kb_error:
             logger.warning(f"知识库后端初始化失败: {kb_error}")
         
@@ -500,8 +500,8 @@ async def query_knowledge_base(
         
         # 执行查询（这里需要根据实际的知识库实现来调整）
         try:
-            results = await knowledge_base.query_knowledge_base(
-                db_id, query_request.query, query_request.meta
+            results = await knowledge_base.aquery(
+                query_text=query_request.query, db_id=db_id, **query_request.meta
             )
         except Exception as query_error:
             logger.error(f"知识库查询失败: {query_error}")

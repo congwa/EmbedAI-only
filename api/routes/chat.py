@@ -23,7 +23,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(tags=["chat"])
 limiter = Limiter(key_func=get_remote_address)
 
 # =============================================================================
@@ -277,7 +277,7 @@ async def get_user_threads(
     try:
         threads = db.query(Thread).filter(
             Thread.user_id == str(current_user.id)
-        ).order_by(Thread.created_at.desc()).offset(skip).limit(limit).all()
+        ).order_by(Thread.create_at.desc()).offset(skip).limit(limit).all()
         
         result = [
             {
@@ -285,8 +285,8 @@ async def get_user_threads(
                 "title": thread.title,
                 "description": thread.description,
                 "status": thread.status,
-                "created_at": thread.created_at.isoformat() if thread.created_at else None,
-                "updated_at": thread.updated_at.isoformat() if thread.updated_at else None
+                "created_at": thread.create_at.isoformat() if thread.create_at else None,
+                "updated_at": thread.update_at.isoformat() if thread.update_at else None
             }
             for thread in threads
         ]
@@ -325,6 +325,7 @@ async def create_thread(
         
         db.add(thread)
         db.commit()
+        db.refresh(thread)
         
         log_operation(db, current_user.id, "创建对话线程", f"线程ID: {thread_id}", request)
         
@@ -333,7 +334,7 @@ async def create_thread(
             "title": thread.title,
             "description": thread.description,
             "status": thread.status,
-            "created_at": thread.created_at.isoformat()
+            "created_at": thread.create_at.isoformat()
         }
         
     except Exception as e:
@@ -359,11 +360,11 @@ async def delete_thread(
             Thread.id == thread_id,
             Thread.user_id == str(current_user.id)
         ).first()
-        # 输入验证
-        if not rec_request.message.strip():
+
+        if not thread:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="message不能为空"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="对话线程不存在或您没有权限删除"
             )
         
         db.delete(thread)

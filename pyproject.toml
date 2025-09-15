@@ -87,7 +87,8 @@ markers = [
     "database: 需要数据库的测试",
     "auth: 认证相关测试",
     "knowledge: 知识库相关测试",
-    "graph: 图谱相关测试"
+    "graph: 图谱相关测试",
+    "chat: 聊天功能相关测试"
 ]
 [tool.coverage.run]
 source = ["app"]
