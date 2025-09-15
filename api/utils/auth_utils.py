@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Any
 
-import jwt
+from jose import jwt
 
 # JWT配置
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "yuxi_know_secure_key")

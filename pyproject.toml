@@ -80,6 +80,15 @@ addopts = "-ra -q --strict-markers --strict-config"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 pythonpath = ["."]
+markers = [
+    "unit: 单元测试",
+    "integration: 集成测试", 
+    "slow: 慢速测试",
+    "database: 需要数据库的测试",
+    "auth: 认证相关测试",
+    "knowledge: 知识库相关测试",
+    "graph: 图谱相关测试"
+]
 [tool.coverage.run]
 source = ["app"]
 omit = ["*/tests/*", "*/test_*"]

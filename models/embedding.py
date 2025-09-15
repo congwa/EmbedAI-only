@@ -24,7 +24,7 @@ class BaseEmbeddingModel(ABC):
         self.model = model or name
         self.dimension = dimension
         self.base_url = get_docker_safe_url(base_url)
-        self.api_key = os.getenv(api_key, api_key)
+        self.api_key = os.getenv(api_key) if api_key else None
         self.embed_state = {}
 
     @abstractmethod

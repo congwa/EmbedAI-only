@@ -6,7 +6,7 @@ from jose import JWTError
 from sqlalchemy.orm import Session
 
 from api.db_manager import db_manager
-from models.user_model import User
+from api.models.user_model import User
 from api.utils.auth_utils import AuthUtils
 
 # 定义OAuth2密码承载器，指定token URL

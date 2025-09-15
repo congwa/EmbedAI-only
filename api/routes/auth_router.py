@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from api.db_manager import db_manager
-from models.user_model import User
+from api.models.user_model import User
 from api.utils.auth_middleware import get_admin_user, get_current_user, get_db
 from api.utils.auth_utils import AuthUtils
 from api.utils.common_utils import log_operation

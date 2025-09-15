@@ -4,7 +4,7 @@ from pathlib import Path
 
 from langchain_text_splitters import MarkdownTextSplitter
 
-import config
+from core import config
 from utils import hashstr, logger
 
 
@@ -123,9 +123,13 @@ def get_embedding_config(embed_info: dict) -> dict:
             config_dict["base_url"] = embed_info["base_url"]
             config_dict["dimension"] = embed_info.get("dimension", 1024)
         else:
-            from models import select_embedding_model
+            from models.embedding import OllamaEmbedding
 
-            default_model = select_embedding_model(config.embed_model)
+            default_model = OllamaEmbedding(
+                model=config.LIGHTRAG_EMBEDDING_MODEL,
+                dimension=1024,
+                base_url="http://localhost:11434/api/embed"
+            )
             config_dict["model"] = default_model.model
             config_dict["api_key"] = default_model.api_key
             config_dict["base_url"] = default_model.base_url

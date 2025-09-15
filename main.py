@@ -11,10 +11,10 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from api.routes import chat, admin, health, graph_router, knowledge_router
+from api.routes import chat, admin, health, graph_router, knowledge_router, auth_router
 from core.config import settings
 from core.exceptions import setup_exception_handlers
-from utils.logging_config import setup_logging
+from utils.logging_config import logger
 
 
 # 设置限流器
@@ -28,7 +28,7 @@ app_state: Dict[str, Any] = {}
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
     # 启动时初始化
-    setup_logging()
+    logger.info("应用启动中...")
     
     # 初始化知识库管理器
     from core.kb_service import KBService
@@ -71,6 +71,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/api", tags=["健康检查"])
     app.include_router(chat.router, prefix="/api/chat", tags=["聊天推荐"])
     app.include_router(admin.router, prefix="/api/admin", tags=["管理后台"])
+    app.include_router(auth_router.auth, prefix="/api", tags=["认证"])
     app.include_router(knowledge_router.router, prefix="/api", tags=["知识库管理"])
     app.include_router(graph_router.graph, prefix="/api", tags=["图谱管理"])
     

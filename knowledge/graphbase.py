@@ -5,8 +5,8 @@ import warnings
 
 from neo4j import GraphDatabase as GD
 
-import config
-from models import select_embedding_model
+from core import config
+from models.embedding import OllamaEmbedding
 from utils import logger
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -22,8 +22,8 @@ class GraphDatabase:
         self.status = "closed"
         self.kgdb_name = "neo4j"
         self.embed_model_name = os.getenv("GRAPH_EMBED_MODEL_NAME") or "siliconflow/BAAI/bge-m3"
-        self.embed_model = select_embedding_model(self.embed_model_name)
-        self.work_dir = os.path.join(config.save_dir, "knowledge_graph", self.kgdb_name)
+        self.embed_model = OllamaEmbedding(model=self.embed_model_name, dimension=1024, base_url="http://localhost:11434/api/embed")
+        self.work_dir = os.path.join("./data", "knowledge_graph", self.kgdb_name)
         os.makedirs(self.work_dir, exist_ok=True)
 
         # 尝试加载已保存的图数据库信息

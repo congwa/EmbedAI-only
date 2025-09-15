@@ -5,8 +5,8 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models import Base
-from models.user_model import User
+from api.models import Base
+from api.models.user_model import User
 from core import config
 from utils.logging_config import logger
 

@@ -10,8 +10,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from models.user_model import User
-from models.kb_models import KnowledgeDatabase, KnowledgeFile, KnowledgeNode
+from api.models.user_model import User
+from api.models.kb_models import KnowledgeDatabase, KnowledgeFile, KnowledgeNode
 from api.utils.auth_middleware import get_current_user, get_db
 from api.utils.common_utils import log_operation
 from knowledge import knowledge_base

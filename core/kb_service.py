@@ -6,7 +6,7 @@ import uuid
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from knowledge.kb_manager import KBManager
+from knowledge.kb_manager import KnowledgeBaseManager as KBManager
 from knowledge.lightrag_kb import LightRagKB
 from core.config import settings, get_openai_config, get_embedding_config, get_reranker_config
 from core.exceptions import KnowledgeBaseError, RAGError
