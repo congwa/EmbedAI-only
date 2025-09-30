@@ -38,7 +38,7 @@ os.environ["MILVUS_PORT"] = "10103"
 os.environ["NEO4J_URI"] = "bolt://localhost:10105"
 os.environ["NEO4J_PASSWORD"] = "embedai123"
 os.environ["MINIO_ENDPOINT"] = "localhost:10106"
-os.environ["MINIO_SECRET_KEY"] = "minioadmin123"
+os.environ["MINIO_SECRET_KEY"] = "minioadmin"
 
 # 延迟导入以避免循环依赖
 from main import app
@@ -134,7 +134,7 @@ def real_milvus_connection():
         connections.connect(
             alias="default",
             host="localhost",
-            port=10103
+            port=10130  # Milvus gRPC端口
         )
         yield connections
         connections.disconnect("default")
@@ -166,7 +166,7 @@ def real_minio_client():
         client = Minio(
             "localhost:10106",
             access_key="minioadmin",
-            secret_key="minioadmin123",
+            secret_key="minioadmin",
             secure=False
         )
         # 测试连接
